@@ -32,8 +32,6 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Set this to your GitHub repo name e.g. /sgb-final/
-          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH || '/' }}
           VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
 
       - uses: actions/configure-pages@v4

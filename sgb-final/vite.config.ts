@@ -4,14 +4,11 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  // "/sgbpvltd/" for GitHub Pages at kashyapsuhasg.github.io/sgbpvltd/
-  // Override with VITE_BASE_PATH env var if needed (e.g. "/" for Vercel)
-  base: process.env.VITE_BASE_PATH ?? "/sgbpvltd/",
-
   plugins: [
     react(),
-
-    // Dev tools for chef.convex.dev (only in development)
+    // The code below enables dev tools like taking screenshots of your site
+    // while it is being developed on chef.convex.dev.
+    // Feel free to remove this code if you're no longer developing your app with Chef.
     mode === "development"
       ? {
           name: "inject-chef-dev",
@@ -28,7 +25,7 @@ window.addEventListener('message', async (message) => {
   const worker = await import('https://chef.convex.dev/scripts/worker.bundled.mjs');
   await worker.respondToMessage(message);
 });
-`,
+            `,
                 map: null,
               };
             }
@@ -36,14 +33,11 @@ window.addEventListener('message', async (message) => {
           },
         }
       : null,
+    // End of code for taking screenshots on chef.convex.dev.
   ].filter(Boolean),
-
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-  },
-  build: {
-    chunkSizeWarningLimit: 1500,
   },
 }));

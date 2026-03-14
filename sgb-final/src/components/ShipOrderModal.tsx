@@ -15,6 +15,12 @@ const providerInfo: Record<string, { label: string; icon: string }> = {
   indian_post: { label: "Indian Post", icon: "📮" },
 };
 
+function generateTrackingId(provider: string): string {
+  const prefix = provider === "sugama" ? "SGM" : provider === "vrl" ? "VRL" : "IND";
+  const rand = Math.random().toString(36).substring(2, 10).toUpperCase();
+  return `${prefix}-${rand}`;
+}
+
 export function ShipOrderModal({ orderId, onClose }: Props) {
   const confirmShipping = useMutation(api.orders.confirmShipping);
   const orderData = useQuery(api.orders.getById, { orderId });
@@ -29,6 +35,9 @@ export function ShipOrderModal({ orderId, onClose }: Props) {
   useEffect(() => {
     if (orderData?.shippingProvider) {
       setProvider(orderData.shippingProvider);
+      setTrackingId(generateTrackingId(orderData.shippingProvider));
+    } else {
+      setTrackingId(generateTrackingId("sugama"));
     }
   }, [orderData]);
 
@@ -45,25 +54,6 @@ export function ShipOrderModal({ orderId, onClose }: Props) {
         notes: notes || undefined,
       });
       toast.success("Order shipped successfully!");
-
-      // Send WhatsApp notification to customer
-      const phone = (orderData.whatsappNumber || orderData.customerPhone).replace(/\D/g, "");
-      const providerLabel = providerInfo[provider].label;
-      const deliveryLine = estimatedDelivery
-        ? `\n📅 Estimated Delivery: ${estimatedDelivery}`
-        : "";
-      const message =
-        `Hello ${orderData.customerName}! 👋\n\n` +
-        `Your order *#${orderData.orderNumber}* has been shipped! 🚚\n\n` +
-        `📦 Shipping Provider: ${providerLabel}\n` +
-        `🔖 Tracking ID: *${trackingId}*` +
-        deliveryLine +
-        `\n\nThank you for shopping with *SGB Pvt. Ltd.*! 🌿\n` +
-        `For any queries, reply to this message.`;
-
-      const waUrl = `https://wa.me/${phone.startsWith("91") ? phone : "91" + phone}?text=${encodeURIComponent(message)}`;
-      window.open(waUrl, "_blank");
-
       onClose();
     } catch {
       toast.error("Failed to ship order");
@@ -108,14 +98,22 @@ export function ShipOrderModal({ orderId, onClose }: Props) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tracking ID *</label>
-            <input
-              type="text"
-              value={trackingId}
-              onChange={(e) => setTrackingId(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono"
-              placeholder="Enter tracking ID from courier"
-              required
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={trackingId}
+                onChange={(e) => setTrackingId(e.target.value)}
+                className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 font-mono"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setTrackingId(generateTrackingId(provider))}
+                className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+              >
+                🔄 Generate
+              </button>
+            </div>
           </div>
 
           <div>
@@ -144,11 +142,8 @@ export function ShipOrderModal({ orderId, onClose }: Props) {
             disabled={submitting || !trackingId.trim()}
             className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50"
           >
-            {submitting ? "Processing..." : "🚚 Confirm Shipment & Notify Customer"}
+            {submitting ? "Processing..." : "🚚 Confirm Shipment"}
           </button>
-          <p className="text-xs text-center text-gray-400">
-            WhatsApp will open automatically with a pre-filled message to the customer after confirming.
-          </p>
         </form>
       </div>
     </div>

@@ -201,11 +201,15 @@ export const forceRefreshProducts = mutation({
   args: {},
   handler: async (ctx) => {
     const all = await ctx.db.query("products").collect();
-    // Check if any product is missing imageUrl
-    const needsUpdate = all.some((p) => !p.imageUrl);
-    if (!needsUpdate && all.length === ACTUAL_PRODUCTS.length) return;
-    
-    // Delete all and recreate with images
+
+    // Always wipe and re-seed if count doesn't match or any imageUrl is wrong
+    const expectedPaths = new Set(ACTUAL_PRODUCTS.map((p) => p.imageUrl));
+    const allCorrect =
+      all.length === ACTUAL_PRODUCTS.length &&
+      all.every((p) => p.imageUrl && expectedPaths.has(p.imageUrl));
+
+    if (allCorrect) return;
+
     for (const p of all) {
       await ctx.db.delete(p._id);
     }

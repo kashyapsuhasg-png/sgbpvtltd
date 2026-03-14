@@ -4,7 +4,8 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/",
+  // Use "/" for Vercel/local. For GitHub Pages, set VITE_BASE_PATH env var to your repo name e.g. "/sgb-final/"
+  base: process.env.VITE_BASE_PATH ?? "/",
 
   plugins: [
     react(),

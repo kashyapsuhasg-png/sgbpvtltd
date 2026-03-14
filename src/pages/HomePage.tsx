@@ -106,8 +106,12 @@ export function HomePage({ setPage, setLoginRole }: HomePageProps) {
                 <div key={product._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-100 overflow-hidden group">
                   <div className="h-48 bg-white flex items-center justify-center overflow-hidden border-b border-gray-100 p-3">
                     {product.imageUrl ? (
-                      <img 
-                        src={product.imageUrl} 
+                      <img
+                        src={
+                          product.imageUrl.startsWith("/")
+                            ? `${import.meta.env.BASE_URL}${product.imageUrl.replace(/^\//, "")}`
+                            : product.imageUrl
+                        }
                         alt={product.name}
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
